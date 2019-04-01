@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>我的星星</title>
+        <style type="text/css">
+            * {
+                margin: 0;
+                padding: 0;
+            }
+
+            body,
+            html {
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+            }
+
+            #mycanvas {
+                background-image: url("images/love.jpg");
+                background-size: cover;
+            }
+        </style>
+    </head>
+
+    <body>
+        <canvas id="mycanvas"></canvas>
+        <script type="text/javascript">
+            var c_width = document.documentElement.clientWidth;
+            var c_height = document.documentElement.clientHeight;
+            var canvas = document.querySelector("#mycanvas");
+            canvas.width = c_width;
+            canvas.height = c_height;
+            var ctx = canvas.getContext("2d");
+            ctx.fillStyle = "white";
+            ctx.strokeStyle = "#FFFF6B80";
+            ctx.lineWidth = "0.3";
+
+            var mouse_star = new Star(ctx, 0, 0, 1);
+            document.onmousemove = function(e) {
+                var x = e.clientX;
+                var y = e.clientY;
+                mouse_star.x = x;
+                mouse_star.y = y;
+            };
+            var arr = [];
+            for (var i = 0; i < 200; i++) {
+                arr.push(
+                    new Star(
+                        ctx,
+                        parseInt(Math.random() * c_width),
+                        parseInt(Math.random() * c_height),
+                        1,
+                        1
+                    )
+                );
+            }
+
+            document.onmousedown = function(e) {
+                for (var i = 0; i < 5; i++) {
+                    arr.push(new Star(ctx, e.clientX, e.clientY, 1));
+                    arr.shift();
+                }
+            };
+            var timer = setInterval(function() {
+                ctx.clearRect(0, 0, c_width, c_height);
+                arr.forEach((v, i) => {
+                    v.render();
+                    v.move();
+                    if (v.x < 0 || v.x > c_width) {
+                        v.changeX();
+                    }
+                    if (v.y < 0 || v.y > c_height) {
+                        v.changeY();
+                    }
+                });
+                arr.forEach((v, i) => {
+                    for (var j = i; j < arr.length; j++) {
+                        if (
+                            Math.abs(v.x - arr[j].x) < 50 &&
+                            Math.abs(v.y - arr[j].y) < 50
+                        ) {
+                            line(v.x, v.y, arr[j].x, arr[j].y);
+                        }
+                    }
+                    if (
+                        Math.abs(mouse_star.x - v.x) < 120 &&
+                        Math.abs(mouse_star.y - v.y) < 120
+                    ) {
+                        line(mouse_star.x, mouse_star.y, v.x, v.y);
+                    }
+                });
+            }, 20);
+
+            function line(x1, y1, x2, y2) {
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.closePath();
+                ctx.stroke();
+            }
+
+            function Star(ctx, x, y, r) {
+                this.x = x;
+                this.y = y;
+                this.r = r;
+                this.ctx = ctx;
+                this.x_speed =
+                    ((parseInt(Math.random() * 3) + 1) *
+                        Math.pow(-1, parseInt(Math.random() * 10 + 1))) /
+                    6;
+                this.y_speed =
+                    ((parseInt(Math.random() * 3) + 1) *
+                        Math.pow(-1, parseInt(Math.random() * 10 + 1))) /
+                    6;
+            }
+            Star.prototype.render = function() {
+                this.ctx.beginPath();
+                this.ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2, false);
+                this.ctx.closePath();
+                this.ctx.fill();
+            };
+            Star.prototype.move = function() {
+                this.x -= this.x_speed;
+                this.y -= this.y_speed;
+            };
+            Star.prototype.changeX = function() {
+                this.x_speed = -this.x_speed;
+            };
+            Star.prototype.changeY = function() {
+                this.y_speed = -this.y_speed;
+            };
+        </script>
+    </body>
+</html>
